@@ -16,7 +16,8 @@ function func($variable = [], $classes = [])
 
     foreach ($variable as $key => $value) {
         $origin = $key;
-        $name = array_shift($value);        
+        $name = array_shift($value);
+
         $len = count($value);
         $str = '';
         $pieces = [];
@@ -33,7 +34,16 @@ function func($variable = [], $classes = [])
         } else {
             $origin = "'$origin'";
         }
-        $code = "new \Func\Alias($origin, '$name', $arg);";
+
+        $export = '';
+        if (is_array($name)) {
+            $export = var_export($name, true);
+            $export = preg_replace('/[\r\n]+/', '', $export);
+        } else {
+            $export = "'$name'";
+        }
+
+        $code = "new \Func\Alias($origin, $export, $arg);";
         eval($code);
     }
 }
