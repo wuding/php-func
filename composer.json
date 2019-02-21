@@ -1,7 +1,7 @@
 {
   "name": "wuding/php-func",
   "description": "PHP function polyfill",
-  "keywords": ["Function", "Polyfill"],
+  "keywords": ["Function", "Polyfill", "Shim"],
   "license": "BSD-3-Clause",
   "authors": [
     {
