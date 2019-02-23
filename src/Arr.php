@@ -41,3 +41,35 @@ function array_diff_kv($arr = [], $other = [], $ignore = [], $null = false)
     }
     return $diff;
 }
+
+function arr_fixed_assoc(array &$array, $reset = false)
+{
+    $arr = $array;
+    foreach ($arr as $key => $value) {
+        if (is_numeric($key)) {
+            unset($arr[$key]);
+            $key = $value;
+            $arr[$key] = $value;
+        }
+    }
+    if ($reset) {
+        $array = $arr;
+    }
+    return $arr;
+}
+
+function arr_reset_values(array &$array, $set = [], $reset = false)
+{
+    $prefix = isset($set['prefix']) ? $set['prefix'] : '';
+    $suffix = isset($set['suffix']) ? $set['suffix'] : '';
+    $arr = $array;
+    foreach ($arr as $key => &$value) {
+        if (is_string($key)) {
+            $value = $prefix . $value . $suffix;
+        }
+    }
+    if ($reset) {
+        $array = $arr;
+    }
+    return $arr;
+}
