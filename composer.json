@@ -11,9 +11,10 @@
   ],
   "autoload": {
     "psr-4": {
+      "Func\\X\\": "src/X/",
       "Func\\": "src/"
     },
-    "files": ["src/functions.php"]
+    "files": ["src/Func.php"]
   },
   "require": {
     "php": ">=5.4.0"

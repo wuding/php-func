@@ -9,8 +9,10 @@ class Alias
     public static $global = [];
     public static $const = [];
     public static $prefix = null;
+    public static $debug_exist = null;
+    public static $unique = [];
 
-	public function __construct($origin, $name)
+    public function __construct($origin, $name)
     {
         /*if (!isset($GLOBALS['FUNC_ARGS'])) {
             $GLOBALS['FUNC_ARGS'] = [];
@@ -20,22 +22,27 @@ class Alias
             $GLOBALS['FUNC_ARGS'][$name] = [];
         }
         */
+        
         $args = func_get_args();
         array_shift($args);
         array_shift($args);
-        $anonymous = null;
+        $anonymous = 0;
         $init = $config = null;
         $keys = $values = [];
+
         if (is_object($origin)) {
-            $set = new Set($name, $origin);
-            $origin = "\Func\Set::call";
+            $set = \Func::set($name, $origin);
+            $origin = "\Func::call";
             $anonymous = "'$name'";
+            #print_r([__LINE__, __FILE__, $name, $origin]);
 
         } elseif (is_object($name)) {
-            $set = Set::init($origin, $name);
+
+            $set = \Func::set($origin, $name);
             $name = $origin;
-            $origin = "\Func\Set::call";
+            $origin = "\Func::call";
             $anonymous = "'$name'";
+            #print_r([__LINE__, __FILE__, $name, $origin]);
 
         } elseif (is_array($name)) {
             $ini = isset($name[1]) ? $name[1] : [];
@@ -50,11 +57,18 @@ class Alias
             extract($var_array);
         }
 
-        if ($name == $origin) {
-            $info = [$name, $origin];
-            $info['line'] = __LINE__;
 
-            $this->debug('', $info, 1);
+
+        if ($name == $origin) {
+            if (preg_match('/^\\\(.*)/i', $origin, $matches)) {
+                print_r($matches);
+                $info = [$name, $origin];
+                $info['line'] = __LINE__;
+                $info['file'] = __FILE__;
+
+                $this->debug('', $info, 1);
+            }
+            $origin = "\Func\\$origin";
         }
 
         self::$const[] = $name;
@@ -65,6 +79,7 @@ class Alias
             $ns = $matches[1];
             $origin_type = $matches[2];
             $name = $matches[3];
+
         }
         $origin_ns = '';
         
@@ -81,7 +96,7 @@ class Alias
                     #$ns = $origin_ns;
                 }
             }
-            
+            #print_r([__LINE__, __FILE__, $origin_type, $is_class, $wtf, $origin, $name, $anonymous]);
         }
         if (!$name) {
             $name = $origin_name;
@@ -112,11 +127,40 @@ class Alias
         }
         # print_r($arr);
         $nm = '';
+        $dir = '';
+        $file = '';
         if (preg_match('/^\\\Func\\\([a-z_]+)\\\(.*)$/i', $origin, $matches)) {
-            $nm = '\Func\\' . $matches[1];
-            $obj = new $nm;
-            $origin_ns = '';
-            $origin_name = $matches[2];
+            $nme = $matches[1];
+            $postfix = $matches[2];
+            $split = preg_split('/\\\/', $postfix);
+            $count = count($split);
+            $prefix = '';
+            if (1 < $count) {
+                $prefix = $nme;
+                $file = array_pop($split);
+                $str = implode('\\', $split);
+                $nme .= "\\$str";
+                $dir = preg_replace('/(\\\|\/)$/', '', trim(FUNC_X_PATH)) . '/';
+            }
+            if (!in_array($nme, ['Ext', 'X'])) {
+                
+                $nm = '\Func\\' . $nme;
+                $obj = new $nm;
+                $origin_ns = '';
+                $origin_name = $matches[2];
+                if ($prefix) {
+                    $origin_name = "$prefix\\$origin_name";
+                    $nme = array_pop($split);
+                }
+                
+                $filename = strtolower($nme);
+                $filename .= '.php';
+                $filename = $dir . "global/$filename";
+                # echo $filename . PHP_EOL;
+                require $filename;
+                /**/
+            }
+            
         } elseif (preg_match('/^\\\Func\\\(.*)$/i', $origin, $matches)) {
             $nm = '\Func\\' . $matches[1];
         }
@@ -126,24 +170,30 @@ class Alias
         
         
         # $origin_name = $origin_name ? : $name;
+        $original = $origin;
         $origin = "return $origin_ns$origin_type$origin_name";
+        #print_r([__LINE__, __FILE__, $name, $origin]);
         $is_class = 0;
+        $wtf = 0;
         $class = '';
         if (in_array($origin_type, ['->', '::']) && !$nm) {
-            
+            $wtf = 1;
             $class = $origin_ns;
             # $namespace = '';
             if (in_array($name, ['__construct'])) {
                 
                 
-                $origin = "$class";$origin = "return new $class";
+                $origin = "$class";
+                $origin = "return new $class";
             } else {
                 
-                $origin = "$origin_type$origin_name";$origin = "return self::\$obj$origin_type$origin_name";
+                $origin = "$origin_type$origin_name";
+                $origin = "return self::\$obj$origin_type$origin_name";
                 $is_class = 1;
             }
         }
         $classes = addslashes($class);
+
 
         # print_r(get_defined_vars());
         $string = <<<HEREDOC
@@ -230,7 +280,7 @@ class Alias
                     \$vars = self::args(\$args, \$keys, __METHOD__);
                     extract(\$vars);
 
-                    if ($is_class) {
+                    if ($is_class && !$anonymous) {
                         \$obj = self::obj(\$args);
                         /*\$result = 240;
                         \$code = "\\\$result = \\\$obj->test(\\\$a, \\\$b, \\\$c);";*/
@@ -436,7 +486,31 @@ class Alias
         }
 HEREDOC;
 
-        $str = $is_class ? preg_replace('/[\r\n]+/', '', $string) : "namespace $namespace { function $name($arg) { $origin($param); } }";
+        if (!$wtf) {
+
+        $string = <<<HEREDOC
+namespace $namespace { 
+    function $name($arg)
+    { 
+        \$arr = func_get_args();
+
+        return \Func\Alias::call(
+            '$origin_ns$origin_type$origin_name', 
+            \$arr
+        );
+    } 
+}
+HEREDOC;
+        } elseif ($anonymous) {
+            $string = "namespace $namespace { function $name($arg) { return $original($param); } }";
+            #print_r([__LINE__, $string]);
+
+        }
+
+        
+        $str = preg_replace('/[\r\n]+/', '', $string);
+       
+        
 
         
 
@@ -446,7 +520,18 @@ HEREDOC;
         }
         $origin = preg_replace('/^\\\|\\\$/', '', $origin);
 
+        $args = json_encode($args);
+        $unique = "$class($args) $origin_ns$origin_type$origin_name";
+        $hash = md5($unique);
         
+        if (!isset(self::$unique[$hash])) {
+            self::$unique[$hash] = $unique;
+        } else {
+            $info['info'] = "Cannot redeclare $name()";
+            $info['line'] = __LINE__;
+            #self::debug($is_class ? $string : $str, $info, 1);
+            #print_r([__LINE__, __FILE__, $unique, $hash]);
+        }
 
         $info = [
             'namespace' => $namespace, 
@@ -462,9 +547,12 @@ HEREDOC;
             $info['line'] = __LINE__;
             self::debug($is_class ? $string : $str, $info, 1);
         }
+        
         if (!function_exists($class)) {
             eval($str);
-        } else {
+            #echo $string . PHP_EOL;
+
+        } elseif (self::$debug_exist) {
             $info['info'] = "Cannot redeclare $name()";
             $info['line'] = __LINE__;
             self::debug($is_class ? $string : $str, $info);
@@ -548,5 +636,19 @@ HEREDOC;
             $val[self::$prefix] = $prefix;
         }
         return $val;
+    }
+
+    public static function call($name, $args = [])
+    {
+        $func = $name;
+        $pieces = [];
+        foreach ($args as $key => $value) {
+            $s = "\$args[$key]";
+            $pieces[] = $s;
+        }
+        $arg = implode(', ', $pieces);
+        $code = "\$what = \$func($arg);";
+        eval($code);
+        return $what;
     }
 }
