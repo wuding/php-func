@@ -13,3 +13,28 @@ function _unset($arr, $keys = [])
 {
 	return f\_unset($arr, $keys);
 }
+
+function globals(array $vars = [])
+{
+    return f\globals($vars);
+}
+
+function _define($name, $value = null)
+{
+    return f\_define($name, $value);
+}
+
+function _defined($name)
+{
+    return f\_defined($name);
+}
+
+function _constant($name, $value = null)
+{
+    return f\_constant($name, $value);
+}
+
+function request_scheme($vars = null)
+{
+    return f\request_scheme($vars);
+}

@@ -91,3 +91,11 @@ function _constant($name, $value = null)
     }
     return $value;
 }
+
+function request_scheme($vars = null)
+{
+    $vars = (null === $vars) ? $_SERVER : $vars;
+    $https = _isset($vars, 'HTTPS');
+    $scheme = ('on' == strtolower($https)) ? 'https' : 'http';
+    return $request_scheme = _isset($vars, 'REQUEST_SCHEME', $scheme);
+}
