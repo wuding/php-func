@@ -6,6 +6,9 @@ if (!defined('FUNC_X_PATH')) {
 	define('FUNC_X_PATH', __DIR__ . '/X');
 }
 
+global $_CONST;
+$_CONST = [];
+
 class Func
 {
     public static $obj = [];

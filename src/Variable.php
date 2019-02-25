@@ -58,3 +58,36 @@ function _unset($arr, $keys = [])
     }
     return $arr;
 }
+
+function globals(array $vars = [])
+{
+    $vars[] = 'GLOBALS';
+    $arr = [];
+    foreach ($GLOBALS as $key => $value) {
+        if (!in_array($key, $vars)) {
+            $arr[$key] = $value;
+        }
+    }
+    return $arr;
+}
+
+function _define($name, $value = null)
+{
+    global $_CONST;
+    $_CONST[$name] = $value;
+}
+
+function _defined($name)
+{
+    global $_CONST;
+    return array_key_exists($name, $_CONST);
+}
+
+function _constant($name, $value = null)
+{
+    global $_CONST;
+    if (_defined($name)) {
+        $value = $_CONST[$name];
+    }
+    return $value;
+}

@@ -3,10 +3,10 @@
 // 批量配置
 $functions = [
     '_isset' => ['', [], '', null], // 没有命名空间的，缺省使用 Func
-    '\Func\array_diff_kv' => ['', [], [], [], false], // 主命名空间和函数名
-    '\Func\Arr::diff' => ['\Func\diff', [], [], [], false], // 使用静态方法，配置第一项是要用的别名
+    '\Func\array_diff_kv' => ['', ['test' => 'text_a'], ['test' => 'string_b'], [], false], // 主命名空间和函数名
+    '\Func\Arr::diff' => ['\Func\diff', ['test' => 'text_0'], ['test' => 'string_1'], [], false], // 使用静态方法，配置第一项是要用的别名
     'str_match' => ['', '//', '', null, false], // 配置第二项级以后是函数参数默认值
-    'wtf' => [function ($text) { return $text; }, 'hi'], // 直接定义匿名函数
+    'wtf' => [function ($text, $hi) { $arr = func_get_args(); return $arr; }, ['hi'], ['test']], // 直接定义匿名函数
     '\Func\Ext\Test::_get' => [['ls', ['A', ['B'], 'C']], 'q', [], 'http'], // 第一项如果是数组，就可以把对象构造参数默认值写上
 ];
 func($functions, ['Variable', 'Arr', 'PCRE']); // 第二个是需要加载的类, 'x/test'
@@ -17,15 +17,16 @@ new Func\X;
 func('\Func\Str\unicode_decode', '', [], [], [], false); // 依次是：调用的类与函数、别名、参数默认值
 #func('\Func\X\Test\unicode_decode', '', [], [], [], false);
 new \Func\Alias('test', function ($text) { return $text; }, 'test'); // 别名位置可以是函数
-new \Func\Alias('\Func\Ext\Test->set', ['lst', [['a'], 'b', 'c']], 'query', [], 'https'); // 也可以是别名与对象创建参数默认值
+new \Func\Alias('\Func\Ext\Test->set', ['x', [['a'], 'b', 'c']], 'query', [], 'https'); // 也可以是别名与对象创建参数默认值
 new \Func\Alias('\Func\X\Test->set', ['lst', [['a'], 'b', 'c']], 'query', [], 'https');
 
 // 函数别名用法
 echo _isset($_GET, 'q', 'query_string');
 print_r(array_diff_kv(['test' => 'text'], ['test' => 'string']));
-print_r(\Func\diff(['test' => 'text'], ['test' => 'string']));
+print_r(array_diff_kv());
+print_r(\Func\diff());
 echo str_match('/^\d+元/', '3元', '1角', true);
-echo wtf('HELLO');
+print_r(wtf());
 echo \Func\X\unicode_decode('\u65b0\u6d6a\u5fae\u535a', 'json');
 echo unicode_decode('\u65b0\u6d6a\u5fae\u535a', 'json');
 echo \Func\hehe('str');

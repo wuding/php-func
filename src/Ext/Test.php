@@ -14,13 +14,13 @@ class Test
 		$this->name = func_get_args();
 	}
 
-	public static function _get($name)
+	public static function _get($name = null)
 	{
 		self::$arg[$name] = func_get_args();
 		return self::$cache[$name];
 	}
 
-	public function set($name)
+	public function set($name = null)
 	{
 		$arg = func_get_args();
 		self::$cache[$name] = $arg;

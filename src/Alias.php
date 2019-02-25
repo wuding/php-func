@@ -106,7 +106,7 @@ class Alias
         
 
 
-        $var_array = self::param($args);
+        $var_array = self::param($args, null, 'defines', 'names', 'keys', 'values');
         extract($var_array);
         if ($anonymous) {
             array_unshift($names, $anonymous);
@@ -114,8 +114,9 @@ class Alias
         $arg = implode(', ', $defines); #echo 
         $param = implode(', ', $names);
         $key_var = implode(", \\\$", $keys);
+        $origin_key = $keys;
+        $origin_val = $values;
         $keys = implode("', '", $keys);
-
         $values = implode(', ', $values);
         $key_var = $key_var ? "[\\\$$key_var]" : '[]';
         $keys = $keys ? "['$keys']" : '[]';
@@ -493,6 +494,21 @@ namespace $namespace {
     function $name($arg)
     { 
         \$arr = func_get_args();
+        \$arr = [];
+
+        \$arg = $values;
+        \$args = $keys;
+        \$i = 0;
+        foreach (\$arg as \$key => \$value) {
+            \$var_name = \$args[\$i];
+            \$val = &$\$var_name;
+            if (is_string(\$val) && preg_match('/^__CONST__\.(.*)/', \$val, \$matches)) {
+                \$val = \Func\_constant(\$matches[1]);
+            }
+            \$arr[] = \$val;
+            \$i++;
+        }
+        \$arr = \Func\Alias::args($values, $keys, func_get_args());
 
         return \Func\Alias::call(
             '$origin_ns$origin_type$origin_name', 
@@ -502,7 +518,28 @@ namespace $namespace {
 }
 HEREDOC;
         } elseif ($anonymous) {
-            $string = "namespace $namespace { function $name($arg) { return $original($param); } }";
+            $string = <<<HEREDOC
+namespace $namespace {
+    function $name($arg)
+    {
+        \$arg = $values;
+        \$args = $keys;
+        \$i = 0;
+        foreach (\$arg as \$key => \$value) {
+            \$var_name = \$args[\$i];
+            \$val = &$\$var_name;
+            if (is_string(\$val) && preg_match('/^__CONST__\.(.*)/', \$val, \$matches)) {
+                \$val = \Func\_constant(\$matches[1]);
+            }
+            \$i++;
+        }
+        \$arr = \Func\Alias::args($values, $keys, func_get_args(), 1);
+        extract(\$arr);
+        /*print_r([521, get_defined_vars(), $arg]);*/
+        return $original($param);
+    }
+}
+HEREDOC;
             #print_r([__LINE__, $string]);
 
         }
@@ -547,7 +584,7 @@ HEREDOC;
             $info['line'] = __LINE__;
             self::debug($is_class ? $string : $str, $info, 1);
         }
-        
+        # self::debug($string, $info);
         if (!function_exists($class)) {
             eval($str);
             #echo $string . PHP_EOL;
@@ -599,9 +636,9 @@ HEREDOC;
 
                 $nm = "FUNC_ARGS_" . self::$count . "_$j";
                 self::$global[] = $nm;
-                define($nm, $value);
+                _define($nm, $value);
                 # $value = "\$GLOBALS['FUNC_ARGS']['$name'][$j]";
-                $value = "$nm";
+                $value = "'__CONST__.$nm'";
             } else {
                 var_dump($value);
                 print_r([__LINE__, __FILE__]);
@@ -650,5 +687,22 @@ HEREDOC;
         $code = "\$what = \$func($arg);";
         eval($code);
         return $what;
+    }
+
+    public static function args($arg = [], $args = [], $param = [], $by_key = null)
+    {
+        $arr = [];
+        $i = 0;
+        foreach ($arg as $key => $value) {
+            $var_name = $args[$i];
+            $val = isset($param[$i]) ? $param[$i] : $value;
+            if (is_string($val) && preg_match('/^__CONST__\.(.*)/', $val, $matches)) {
+                $val = \Func\_constant($matches[1]);
+            }
+            $var_name = $by_key ? $var_name : $i;
+            $arr[$var_name] = $val;
+            $i++;
+        }
+        return $arr;
     }
 }
