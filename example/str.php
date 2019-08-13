@@ -42,13 +42,14 @@ $str = '\u4e3e\u4e2a\u4f8b\u5b50';
 # $result = Str::unicodeDecode($str);
 
 /**/
-// 十进制转十六进制转 URL 解码
+// 十进制转十六进制转 URL 解码转 Unicode 码位
 $str = base_convert('129412', 10, 16);
 # $str = '5434';
 $result = Str::unicodeConvert($str);
-$result = '%' . implode('%', $result);
-$result = urldecode($result);
-
+$result = uni_convert_encoding($str);
+$result = url_convert_encoding($result);
+$result = url_decode($result, true);
+$result = base_convert($result, 10, 16);
 
 /*
 // URL 解码转 HTML 实体转 UTF-8 转 URL 编码
