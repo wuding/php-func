@@ -1,13 +1,18 @@
 <?php
 
+// 错误报告
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
 
 $_NAMES = array(
 	'' => 'index',
 	'index',
+	'str',
 );
 
 
-$Composer = require __DIR__ . '/../../../../vendor/autoload.php';
+$Composer = require __DIR__ . '/../vendor/autoload.php';
 $functions = [
     '_isset' => ['', [], '', null],
     #'\Func\array_diff_kv' => ['', [], [], [], false],
