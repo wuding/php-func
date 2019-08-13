@@ -23,3 +23,18 @@ function unicode_convert($string)
 {
     return f\unicode_convert($string);
 }
+
+function uni_convert_encoding($str)
+{
+    return f\uni_convert_encoding($str);
+}
+
+function url_convert_encoding($arr, $type = null)
+{
+    return f\url_convert_encoding($arr, $type);
+}
+
+function url_decode($str, $type = null)
+{
+    return f\url_decode($str, $type);
+}

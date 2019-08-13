@@ -82,7 +82,8 @@ function strtoarray($str, $columns = 6)
  * http://www.ruanyifeng.com/blog/2007/10/ascii_unicode_and_utf-8.html
  * https://blog.csdn.net/claram/article/details/53054195
  */
-function unicode_convert($string) {
+function unicode_convert($string)
+{
     $bin = base_convert($string, 16, 2);
     $dec = base_convert($string, 16, 10);
     $arr = strtoarray($bin, 6);
@@ -170,4 +171,53 @@ function unicode_convert($string) {
     }
     $list = array_reverse($list);
     return $list;
+}
+
+/**
+ * 将 Unicode 码位转为 URL 编码数组
+ *
+ * @param      <type>   $number    The number
+ * @param      integer  $frombase  The frombase
+ *
+ * @return     <type>   ( description_of_the_return_value )
+ */
+function uni_convert_encoding($number, $frombase = 16)
+{
+    $str = 16 == $frombase ? $number : base_convert($number, $frombase, 16);
+    $result = '&#x' . $str . ';';
+    $result = mb_convert_encoding($result, 'UTF-8', 'HTML-ENTITIES');
+    $result = urlencode($result);
+    $result = trim($result, '%');
+    return $result = explode('%', $result);
+}
+
+/**
+ * 将 URL 编码数组合成字符串或解码
+ *
+ * @param      <type>  $arr    The arr
+ * @param      string  $type   The type
+ *
+ * @return     <type>  ( description_of_the_return_value )
+ */
+function url_convert_encoding($arr, $type = null)
+{
+    $result = '%' . implode('%', $arr);
+    return $result = !$type ? $result : urldecode($result);
+}
+
+/**
+ * 将 URL 百分号编码形式转为 HTML 实体或 Unicode 码位
+ *
+ * @param      <type>  $str    The string
+ * @param      <type>  $type   The type
+ *
+ * @return     <type>  ( description_of_the_return_value )
+ */
+function url_decode($str, $type = null)
+{
+    $str = is_array($str) ? url_convert_encoding($str): $str;
+    $utf8 = urldecode($str);
+    $result = mb_convert_encoding($utf8, 'HTML-ENTITIES', 'UTF-8');
+    $result = $type ? preg_replace('/^&#|;$/', '', $result): $result;
+    return $result;
 }
