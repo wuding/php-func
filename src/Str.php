@@ -81,6 +81,8 @@ function strtoarray($str, $columns = 6)
  * https://zh.wikipedia.org/wiki/UTF-8
  * http://www.ruanyifeng.com/blog/2007/10/ascii_unicode_and_utf-8.html
  * https://blog.csdn.net/claram/article/details/53054195
+ * https://www.zhihu.com/question/23374078
+ * https://www.cnblogs.com/langtianya/p/4087120.html
  */
 function unicode_convert($string)
 {
