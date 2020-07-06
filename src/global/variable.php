@@ -38,3 +38,8 @@ function request_scheme($vars = null)
 {
     return f\request_scheme($vars);
 }
+
+function get()
+{
+    return call_user_func_array("\Func\get", func_get_args());
+}

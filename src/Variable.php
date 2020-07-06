@@ -99,3 +99,8 @@ function request_scheme($vars = null)
     $scheme = ('on' == strtolower($https)) ? 'https' : 'http';
     return $request_scheme = _isset($vars, 'REQUEST_SCHEME', $scheme);
 }
+
+function get($key = null, $value = null)
+{
+    return \Func\Str::parse_string();
+}

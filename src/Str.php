@@ -8,6 +8,11 @@ class Str
     {
 
     }
+
+    public static function __callStatic($name, $argumetns)
+    {
+        return call_user_func_array("\Func\\$name", $argumetns);
+    }
 }
 
 /**
@@ -60,7 +65,7 @@ function strtoarray($str, $columns = 6)
         for ($j = 0; $j < $columns; $j++) {
             if (-1 < $i) {
                 $k = $i . '_' . $j;
-                $row[$k] = $str{$i};
+                $row[$k] = $str[$i];
             }
             $i--;
         }
@@ -153,13 +158,9 @@ function unicode_convert($string)
             $len = strlen($val);
             $row = array();
             for ($i = 0; $i < $len; $i++) {
-                $col = $val{$i};
+                $col = $val[$i];
                 if (preg_match('/[a-z]{1,1}/', $col)) {
-                    if (isset($str{$i})) {
-                        $col = $str{$i};
-                    } else {
-                        $col = 0;
-                    }
+                    $col = isset($str[$i]) ? $str[$i] : 0;
                 }
                 $row[] = $col;
             }
@@ -221,5 +222,40 @@ function url_decode($str, $type = null)
     $utf8 = urldecode($str);
     $result = mb_convert_encoding($utf8, 'HTML-ENTITIES', 'UTF-8');
     $result = $type ? preg_replace('/^&#|;$/', '', $result): $result;
+    return $result;
+}
+
+/* 获取查询字符串的数组形式 */
+function parse_string($encoded_string = null, $result = [])
+{
+    $subject = $encoded_string ?: ($_SERVER['QUERY_STRING'] ?? '');
+    $variable = preg_split('/&/', $subject);
+    foreach ($variable as $str) {
+        if ($str) {
+            $string = rawurldecode($str);
+            $exp = explode('=', $string, 2);
+            $k = $exp[0];
+            $v = $exp[1] ?? null;
+            $key = null;
+            if (preg_match('/^([^\[]+)\[(.*)\]$/', $k, $matches)) {
+                $k = $matches[1];
+                $key = $matches[2];
+            }
+            if (isset($result[$k])) {
+                if (!is_array($result[$k])) {
+                    $result[$k] = array($result[$k]);
+                }
+                if ($key) {
+                    $result[$k][$key] = $v;
+                } else {
+                    $result[$k][] = $v;
+                }
+            } elseif (null === $key) {
+                $result[$k] = $v;
+            } else {
+                $result[$k] = array($key => $v);
+            }
+        }
+    }
     return $result;
 }
