@@ -4,15 +4,15 @@ namespace Func;
 
 class Arr
 {
-	public function __construct()
-	{
+    public function __construct()
+    {
 
-	}
+    }
 
-	public static function diff($arr = [], $other = [], $ignore = [], $null = false)
-	{
-		return array_diff_kv($arr, $other, $ignore, $null);
-	}
+    public static function diff($arr = [], $other = [], $ignore = [], $null = false)
+    {
+        return array_diff_kv($arr, $other, $ignore, $null);
+    }
 }
 
 /**
@@ -70,6 +70,67 @@ function arr_reset_values(array &$array, $set = [], $reset = false)
     }
     if ($reset) {
         $array = $arr;
+    }
+    return $arr;
+}
+
+/*
+解决 array_flip 只能整数和字符串的问题
+*/
+function arr_flip($array, $no_key = null)
+{
+    $arr = [];
+    foreach ($array as $key => $value) {
+        if ($no_key) { // array_keys
+            $arr[] = $key;
+        } else {
+            $arr[$value] = $key;
+        }
+    }
+    return $arr;
+}
+
+/*
+解决 array_merge 值重复
+*/
+function arr_merge($first, $second, $repeat = null)
+{
+    $arr = $val = $k = $last = [];
+    $arr['__repeat__'] = ['first' => [], 'second' => []];
+    foreach ($first as $key => $value) {
+        if (!in_array($value, $val)) {
+            $val[] = $value;
+            if (!in_array($key, $k)) {
+                $k[] = $key;
+                $arr[$key] = $value;
+            } else {
+                $last[] = $value;
+            }
+        } else {
+            $arr['__repeat__']['first'][$key] = $value;
+        }
+    }
+
+    foreach ($second as $key => $value) {
+        if (!in_array($value, $val)) {
+            $val[] = $value;
+            if (!in_array($key, $k)) {
+                $k[] = $key;
+                $arr[$key] = $value;
+            } else {
+                $last[] = $value;
+            }
+        } else {
+            $arr['__repeat__']['second'][$key] = $value;
+        }
+    }
+
+    foreach ($last as $value) {
+        $arr[] = $value;
+    }
+
+    if (!$repeat) {
+        unset($arr['__repeat__']);
     }
     return $arr;
 }
