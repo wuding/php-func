@@ -102,5 +102,12 @@ function request_scheme($vars = null)
 
 function get($key = null, $value = null)
 {
-    return \Func\Str::parse_string();
+    $arr =  \Func\Str::parse_string();
+    if (null !== $key) {
+        if (array_key_exists($key, $arr)) {
+            return $arr[$key];
+        }
+        return $value;
+    }
+    return $arr;
 }
