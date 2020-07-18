@@ -32,7 +32,7 @@ function array_diff_kv($arr = [], $other = [], $ignore = [], $null = false)
     $diff = [];
     foreach ($arr as $key => $value) {
         if (array_key_exists($key, $other)) {
-            if ($value != $val = $other[$key]) {
+            if ($value !== $val = $other[$key]) {
                 $diff[$key] = [$value, $val];
             }
         } elseif($null) {
