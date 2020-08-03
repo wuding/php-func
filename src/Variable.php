@@ -27,11 +27,13 @@ function _isset($arr, $key = '', $value = null)
         $arr = (array) $arr;
     }
 
+    /*
     // 大于等于 7.0
     if (version_compare(phpversion(), '7.0.0', '>=')) {
         eval("\$result = \$arr[\$key] ?? \$value;");
         return $result;
     }
+    */
 
     // 低版本
     return isset($arr[$key]) ? $arr[$key] : $value;
@@ -98,6 +100,21 @@ function request_scheme($vars = null)
     $https = _isset($vars, 'HTTPS');
     $scheme = ('on' == strtolower($https)) ? 'https' : 'http';
     return $request_scheme = _isset($vars, 'REQUEST_SCHEME', $scheme);
+}
+
+function request_url($vars = null, $arr = null)
+{
+    $vars = $vars ?: $_SERVER;
+    $scheme = request_scheme($vars);
+    $host = $vars['HTTP_HOST'] ?? '<err>';
+    $uri = $vars['REQUEST_URI'] ?? '<err>';
+    $url = "$scheme://$host$uri";
+    if (!$arr) {
+        return $url;
+    }
+    $URL = parse_url($url);
+    $URL['url'] = $url;
+    return $URL;
 }
 
 function get($key = null, $value = null)
