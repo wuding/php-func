@@ -96,7 +96,7 @@ function _constant($name, $value = null)
 
 function request_scheme($vars = null)
 {
-    $vars = (null === $vars) ? $_SERVER : $vars;
+    $vars = null === $vars ? $_SERVER : $vars;
     $https = _isset($vars, 'HTTPS');
     $scheme = ('on' == strtolower($https)) ? 'https' : 'http';
     return $request_scheme = _isset($vars, 'REQUEST_SCHEME', $scheme);
@@ -117,9 +117,27 @@ function request_url($vars = null, $arr = null)
     return $URL;
 }
 
+/**
+ * 获取查询项的值
+ *
+ */
 function get($key = null, $value = null)
 {
+    // 获取多项
+    if (is_object($key)) {
+        $string = $key->scalar;
+        $variable = explode(',', $string);
+        $arr = array();
+        foreach ($variable as $key) {
+            $arr[$key] = get($key);
+        }
+        return $arr;
+    }
+
+    // 获取查询数据
     $arr =  \Func\Str::parse_string();
+
+    // 检测键值
     if (null !== $key) {
         if (array_key_exists($key, $arr)) {
             return $arr[$key];
