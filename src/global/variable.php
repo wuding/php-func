@@ -2,6 +2,8 @@
 
 use Func as f;
 
+if (!function_exists('_isset')) {
+
 new \Func\Variable;
 
 function _isset($arr, $key = '', $value = null)
@@ -42,4 +44,6 @@ function request_scheme($vars = null)
 function get()
 {
     return call_user_func_array("\Func\get", func_get_args());
+}
+
 }
