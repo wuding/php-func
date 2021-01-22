@@ -1,6 +1,6 @@
 <?php
 
-namespace php\fn;
+namespace php\func;
 
 function super_globals($variable = null)
 {
