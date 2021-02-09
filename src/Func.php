@@ -2,6 +2,17 @@
 
 namespace php\func;
 
+class Func
+{
+    /*
+    配置
+    */
+    public static $lang = array(
+        'hash_length' => 8,
+    );
+}
+
+// 获取超全局变量
 function super_globals($variable = null)
 {
     $var = array();
@@ -20,6 +31,7 @@ function super_globals($variable = null)
     return $var;
 }
 
+// 从数组中获取指定键的值
 function globals($key = null, $value = null, $var = null)
 {
     $varname = is_string($var) ? $var : null;
@@ -101,17 +113,32 @@ function globals($key = null, $value = null, $var = null)
     return $value;
 }
 
+// 会话
 function session($key = null, $value = null)
 {
     return globals($key, $value, '_SESSION');
 }
 
+// 表单
 function post($key = null, $value = null)
 {
     return globals($key, $value, '_POST');
 }
 
+// 查询
 function get($key = null, $value = null)
 {
     return globals($key, $value, '_GET');
+}
+
+// 语言
+// 模拟 gettext 从散列表数组中读取本地化语言
+function lang($message, $return_key = null)
+{
+    $hash = md5($message);
+    $key = substr($hash, 0, Func::$lang['hash_length']);
+    if (true === $return_key) {
+        return $key;
+    }
+    return globals($key, $message, '_LANG');
 }
