@@ -113,10 +113,28 @@ function globals($key = null, $value = null, $var = null)
     return $value;
 }
 
+// 服务器变量
+function server($key = null, $value = null)
+{
+    return globals($key, $value, '_SERVER');
+}
+
+// Cookie
+function cookie($key = null, $value = null)
+{
+    return globals($key, $value, '_COOKIE');
+}
+
 // 会话
 function session($key = null, $value = null)
 {
     return globals($key, $value, '_SESSION');
+}
+
+// 文件上传
+function files($key = null, $value = null)
+{
+    return globals($key, $value, '_FILES');
 }
 
 // 表单
@@ -141,4 +159,10 @@ function lang($message, $return_key = null)
         return $key;
     }
     return globals($key, $message, '_LANG');
+}
+
+// 配置
+function conf($key = null, $value = null)
+{
+    return globals($key, $value, '_CONF');
 }
