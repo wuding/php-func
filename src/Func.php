@@ -32,7 +32,7 @@ function super_globals($variable = null)
 }
 
 // 从数组中获取指定键的值
-function globals($key = null, $value = null, $var = null)
+function globals($key = null, $value = null, $var = null, $ignore = null)
 {
     $varname = is_string($var) ? $var : null;
     $arr = is_array($var) ? $var : super_globals($varname);
@@ -96,10 +96,33 @@ function globals($key = null, $value = null, $var = null)
     } elseif (null === $key) {
         return $arr;
     }
+
+    // 类型检测
+    if (!is_array($arr)) {
+        var_dump([__FILE__, __LINE__, get_defined_vars()]);
+        exit;
+    }
+
     // 单项
     if (array_key_exists($key, $arr)) {
-        return $val = $arr[$key];
+        $val = $arr[$key];
+        // 仅检测键名
+        if (null === $ignore) {
+            return $val;
+        } elseif (false === $ignore) { // 不可以是 空值
+            if ($val) {
+                return $val;
+            }
+        } elseif (is_array($ignore)) { // 枚举
+            if (!in_array($val, $ignore)) {
+                return $val;
+            }
+        } elseif ($ignore !== $val) { // 单个忽略
+            return $val;
+        }
+        return $value;
     }
+
     // 子项
     $pos = strpos($key, '.');
     if (false !== $pos) {
