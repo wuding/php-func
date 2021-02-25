@@ -4,11 +4,14 @@ namespace php\func;
 
 class Func
 {
+    const VERSION = '21.2.25';
+
     /*
     配置
     */
     public static $lang = array(
         'hash_length' => 8,
+        'var_ignore' => array('', null),
     );
 }
 
@@ -181,7 +184,7 @@ function lang($message, $return_key = null)
     if (true === $return_key) {
         return $key;
     }
-    return globals($key, $message, '_LANG');
+    return globals($key, $message, '_LANG', Func::$lang['var_ignore']);
 }
 
 // 配置
