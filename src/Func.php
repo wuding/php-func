@@ -112,7 +112,8 @@ function globals($key = null, $value = null, $var = null, $ignore = null)
         // 仅检测键名
         if (null === $ignore) {
             return $val;
-        } elseif (false === $ignore) { // 不可以是 空值
+        } elseif (is_bool($ignore)) { // 不可以是 空值
+            $val = true === $ignore ? trim($val) : $val;
             if ($val) {
                 return $val;
             }
@@ -170,9 +171,9 @@ function post($key = null, $value = null)
 }
 
 // 查询
-function get($key = null, $value = null)
+function get($key = null, $value = null, $ignore = null)
 {
-    return globals($key, $value, '_GET');
+    return globals($key, $value, '_GET', $ignore);
 }
 
 // 语言
