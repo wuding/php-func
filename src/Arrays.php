@@ -1,0 +1,21 @@
+<?php
+
+namespace Func;
+
+class Arrays
+{
+    // Unicode charactors range
+    public static function unicodeRange($keyname = null)
+    {
+        $gridStep = array(
+            '0xxxxxxx' => array(0x00, 0x7F),
+            '110xxxxx 10xxxxxx' => array(0x80, 0x7FF),
+            '1110xxxx 10xxxxxx 10xxxxxx' => array(0x800, 0xFFFF),
+            '11110xxx 10xxxxxx 10xxxxxx 10xxxxxx' => array(0x10000, 0x1FFFFF),//10 FFFF
+            '111110xx 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx' => array(0x200000, 0x3FFFFFF),
+            '1111110x 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx' => array(0x4000000, 0x7FFFFFFF),
+        );
+
+        return $gridStep;
+    }
+}
