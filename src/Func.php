@@ -4,7 +4,8 @@ namespace php\func;
 
 class Func
 {
-    const VERSION = '21.2.25';
+    const VERSION = 25.0105;
+    const REVISION = 8;
 
     /*
     配置
@@ -13,6 +14,213 @@ class Func
         'hash_length' => 8,
         'var_ignore' => array('', null),
     );
+
+    public static $ini = array(
+        'request_order' => 'GP',
+        'variables_order' => 'EGPCS',
+    );
+
+    public static function request($key = null, $value = null)
+    {
+        $server_request = array(
+            'URI' => null,
+            'METHOD' => null,
+            'TIME_FLOAT' => null,
+            'TIME' => null,
+        );
+
+        $variable = is_array($key) ? $key : [];
+        foreach ($variable as $ke => $val) {
+            if (is_numeric($ke)) {
+                $ke = $val;
+                $val = null;
+            }
+            $k = strtoupper($ke);
+            if (array_key_exists($k, $server_request)) {
+                $key[$ke] = self::request($k, $val);
+            }
+        }
+
+        if (!is_array($key)) {
+            $k = strtoupper($key);
+            if (array_key_exists($k, $server_request)) {
+                $ke = "REQUEST_$k";
+                $srv = server($ke, $value);
+                return $srv;
+            }
+        }
+
+        return globals($key, $value, '_REQUEST');
+    }
+
+    public static function getenv($name = null, $value = null, $var_array = [])
+    {
+        global $_ENV;
+        $get = null;
+        $set = null;
+        $put = null;
+        if (is_array($var_array)) {
+            extract($var_array);
+        }
+
+        // null
+        if (!is_int($get)) {
+            return globals($name, $value, '_ENV');
+        }
+
+        $env = [];
+        if (is_null($name)) {
+            $env = getenv();
+            if (is_array($value)) {
+                if (2 === $get) {
+                    $env = array_merge($env, $value);
+                } elseif (3 === $get) {
+                    $env = array_merge($value, $env);
+                }
+            }
+            return $env;
+        } elseif (is_string($name)) {
+            $get_local = getenv($name, true) ?: $value;
+            $get_global = getenv($name) ?: $value;
+            $env = 4 === $get ? $get_local : $get_global;
+        }
+
+        $variable = is_array($name) ? $name : [];
+        foreach ($variable as $key => $val) {
+            if (is_numeric($key)) {
+                $key = $val;
+                $val = $value;
+            }
+
+            $get_local = getenv($key, true) ?: $val;
+            $get_global = getenv($key) ?: $val;
+            $v = 4 === $get ? $get_local : $get_global;
+            $env[$key] = $v ?: ($val ?: $v);
+        }
+        return $env;
+    }
+
+    public static function setenv($name = null, $value = null, $var_array = [])
+    {
+        global $_ENV;
+        $get = null;
+        $set = null;
+        $put = null;
+        if (is_array($var_array)) {
+            extract($var_array);
+        }
+
+        // null
+        if (!is_bool($set)) {
+            return globals($name, $value, '_ENV');
+        }
+
+        $env = [];
+        if (is_null($name)) {
+            $env = $_ENV = $value;
+
+        } elseif (is_string($name)) {
+            if (true === $set) {
+                if (!array_key_exists($name, $_ENV)) {
+                    $env = $_ENV[$name] = $value;
+                }
+            } else {
+                $env = $_ENV[$name] = $value;
+            }
+        }
+
+        $variable = is_array($name) ? $name : [];
+        foreach ($variable as $key => $val) {
+            if (is_numeric($key)) {
+                $key = $val;
+                $val = $value;
+            }
+
+            if (true === $set) {
+                if (!array_key_exists($key, $_ENV)) {
+                    $env[$key] = $_ENV[$key] = $val;
+                }
+            } else {
+                $env[$key] = $_ENV[$key] = $val;
+            }
+        }
+        return $env;
+    }
+
+    public static function putenv($name = null, $value = null, $var_array = [])
+    {
+        global $_ENV;
+        $get = null;
+        $set = null;
+        $put = null;
+        if (is_array($var_array)) {
+            extract($var_array);
+        }
+
+        // null
+        if (!$put) {
+            return self::setenv($name, $value, $var_array);
+        }
+
+        $env = [];
+        if (is_string($name)) {
+            $query_data = [$name => $value];
+            $assignment = http_build_query($query_data);
+            $env = putenv($assignment);
+        }
+
+        $variable = is_array($name) ? $name : [];
+        foreach ($variable as $key => $val) {
+            if (is_numeric($key)) {
+                $key = $val;
+                $val = $value;
+            }
+
+            $query_data = [$key => $val];
+            $assignment = http_build_query($query_data);
+            $env[$key] = putenv($assignment);
+        }
+        return $env;
+    }
+
+    public static function arg_key_format($var)
+    {
+        if (is_array($var)) {
+            return $var;
+
+        } elseif (is_string($var)) {
+            $strpos = strpos($var, ',');
+            if (false === $strpos) {
+                return $var;
+            }
+
+        } else {
+            print_r([__LINE__, __FILE__]);
+            var_dump(get_defined_vars());
+            exit;
+        }
+
+        $pattern = "/[,\s]/";
+        $pattern2 = "/=/";
+        $variable = preg_split($pattern, $var);
+        $arr = [];
+        foreach ($variable as $key => $value) {
+            $k = $value;
+            $v = null;
+            $preg_split = preg_split($pattern2, $value);
+            $count = count($preg_split);
+            if (1 < $count) {
+                list($k, $v) = $preg_split;
+                $arr[$k] = $v;
+            } else {
+                $arr[] = $k;
+            }
+
+            // var_dump($preg_split);
+        }
+
+        return $arr;
+    }
 }
 
 // 获取超全局变量
@@ -23,9 +231,12 @@ function super_globals($variable = null)
         case '_SESSION':
             $var = $_SESSION;
             break;
+        case '_REQUEST':
+            $var = $_REQUEST;
+            break;
         default:
             if (is_string($variable)) {
-                $var = $GLOBALS[$variable];
+                $var = $GLOBALS[$variable] ?? null;
             } elseif (is_null($variable)) {
                 $var = $GLOBALS;
             }
@@ -93,7 +304,7 @@ function globals($key = null, $value = null, $var = null, $ignore = null)
             } elseif ($alias) {
                 $item = $alias;
             }
-            $arr[$item] = globals($index, $val, $var);
+            $arr[$item] = globals($index, $val, $var, $ignore);
         }
         return $arr;
     } elseif (null === $key) {
@@ -104,6 +315,11 @@ function globals($key = null, $value = null, $var = null, $ignore = null)
     if (!is_array($arr)) {
         var_dump([__FILE__, __LINE__, get_defined_vars()]);
         exit;
+    }
+
+    $arg_type = is_string($key) || is_int($key);
+    if (!$arg_type) {
+        return false;
     }
 
     // 单项
@@ -173,7 +389,58 @@ function post($key = null, $value = null)
 // 查询
 function get($key = null, $value = null, $ignore = null)
 {
-    return globals($key, $value, '_GET', $ignore);
+    $queryData = globals($key, $value, '_GET', $ignore);
+    $special = in_array($key, [null, false, true], true);
+    if ($special && $value) {
+        $arg_key_format = Func::arg_key_format($value);
+        $additional = globals($arg_key_format, null, '_GET', $ignore);
+
+        $queryData = false === $key ? $additional : array_merge($queryData, $additional);
+
+    }
+    return $queryData;
+}
+
+function request($key = null, $value = null)
+{
+    return Func::request($key, $value);
+}
+
+function env($name = null, $value = null, $var_array = [])
+{
+    global $_ENV;
+    $get = null;
+    $set = null;
+    $put = null;
+    if (is_array($var_array)) {
+        extract($var_array);
+    } elseif (is_int($var_array)) {
+        $get = $var_array;
+    } elseif (is_bool($var_array)) {
+        $set = $var_array;
+    } elseif (is_null($var_array)) {
+        $put = true;
+    }
+
+    $var_array = [
+        'get' => $get,
+        'set' => $set,
+        'put' => $put,
+    ];
+
+    if (is_int($get)) {
+        return Func::getenv($name, $value, $var_array);
+    } elseif (is_bool($set)) {
+        return Func::setenv($name, $value, $var_array);
+    } elseif ($put) {
+        return Func::putenv($name, $value, $var_array);
+    }
+    return globals($name, $value, '_ENV');
+}
+
+function response($key = null, $value = null)
+{
+    return globals($key, $value, 'http_response_header');
 }
 
 // 语言
