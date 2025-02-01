@@ -4,8 +4,8 @@ namespace php\func;
 
 class Func
 {
-    const VERSION = 25.0105;
-    const REVISION = 8;
+    const VERSION = 25.0201;
+    const REVISION = 9;
 
     /*
     配置
@@ -22,11 +22,15 @@ class Func
 
     public static function request($key = null, $value = null)
     {
+        $https = server('HTTPS');
+        $scheme = 'on' === $https ? 'https' : null;
+
         $server_request = array(
             'URI' => null,
             'METHOD' => null,
             'TIME_FLOAT' => null,
             'TIME' => null,
+            'SCHEME' => $scheme,
         );
 
         $variable = is_array($key) ? $key : [];
