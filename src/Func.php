@@ -4,8 +4,8 @@ namespace php\func;
 
 class Func
 {
-    const VERSION = 25.0201;
-    const REVISION = 9;
+    const VERSION = 25.0306;
+    const REVISION = 10;
 
     /*
     配置
@@ -463,4 +463,17 @@ function lang($message, $return_key = null)
 function conf($key = null, $value = null)
 {
     return globals($key, $value, '_CONF');
+}
+
+/*
+类型转换
+*/
+function arrval($value)
+{
+    return $arr = (array) $value;
+}
+
+function object($value)
+{
+    return $obj = (object) $value;
 }
