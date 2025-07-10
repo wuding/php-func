@@ -4,8 +4,8 @@ namespace php\func;
 
 class Func
 {
-    const VERSION = 25.0306;
-    const REVISION = 10;
+    const VERSION = 25.0710;
+    const REVISION = 11;
 
     /*
     配置
@@ -56,6 +56,40 @@ class Func
 
         return globals($key, $value, '_REQUEST');
     }
+
+	static function http($key = null, $value = null)
+    {
+        $server_request = array(
+			'COOKIE' => null,
+			'HOST' => null,
+			'REFERER' => null,
+			'USER_AGENT' => null,
+        );
+
+        $variable = is_array($key) ? $key : [];
+        foreach ($variable as $ke => $val) {
+            if (is_numeric($ke)) {
+                $ke = $val;
+                $val = null;
+            }
+            $k = strtoupper($ke);
+            if (array_key_exists($k, $server_request)) {
+                $key[$ke] = self::http($k, $val);
+            }
+        }
+
+        if (!is_array($key)) {
+            $k = strtoupper($key);
+            if (array_key_exists($k, $server_request)) {
+                $ke = "HTTP_$k";
+                $srv = server($ke, $value);
+                return $srv;
+            }
+        }
+
+        return globals($key, $value, '_SERVER');
+    }
+
 
     public static function getenv($name = null, $value = null, $var_array = [])
     {
@@ -408,6 +442,11 @@ function get($key = null, $value = null, $ignore = null)
 function request($key = null, $value = null)
 {
     return Func::request($key, $value);
+}
+
+function http($key = null, $value = null)
+{
+    return Func::http($key, $value);
 }
 
 function env($name = null, $value = null, $var_array = [])
