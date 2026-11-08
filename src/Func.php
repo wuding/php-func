@@ -2,10 +2,12 @@
 
 namespace php\func;
 
+use Pkg\Glob;
+
 class Func
 {
-    const VERSION = 25.0710;
-    const REVISION = 11;
+    const VERSION = 26.1108;
+    const REVISION = 12;
 
     /*
     配置
@@ -57,13 +59,13 @@ class Func
         return globals($key, $value, '_REQUEST');
     }
 
-	static function http($key = null, $value = null)
+  static function http($key = null, $value = null)
     {
         $server_request = array(
-			'COOKIE' => null,
-			'HOST' => null,
-			'REFERER' => null,
-			'USER_AGENT' => null,
+      'COOKIE' => null,
+      'HOST' => null,
+      'REFERER' => null,
+      'USER_AGENT' => null,
         );
 
         $variable = is_array($key) ? $key : [];
@@ -507,12 +509,59 @@ function conf($key = null, $value = null)
 /*
 类型转换
 */
-function arrval($value)
+function arr($value)
 {
     return $arr = (array) $value;
 }
 
-function object($value)
+function obj($value)
 {
     return $obj = (object) $value;
+}
+
+/*
+cli
+*/
+function queue($fn, $arg)
+{
+list($varname, $t) =  explode(' ', microtime());
+list($s, $m) = explode('.', $varname);
+Glob::$queue[] = $q = [$fn, $arg, $s + $t .".$m" ];
+return $q;
+}
+
+function stdout($pieces, $b)
+{
+
+list($varname, $t) =  explode(' ', microtime());
+list($s, $m) = explode('.', $varname);
+
+$a = [
+    $s + $t .".$m",
+    implode(' ',  $pieces)
+];
+Glob::$stdout[] = $o = array_merge($a, $b);
+return $o;
+}
+
+function color($str, $var, $end = true)
+{
+$a = [
+"\033["
+];
+
+if (is_array($var)) {
+ $a[] = $b = implode(';', $var);
+} else {
+ $a[] = $var;
+}
+
+$a[] = "m";
+$a[] = $str;
+
+if ($end) {
+  $a[] = "\033[0m";
+}
+
+return $s = implode('', $a);
 }
